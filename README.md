@@ -1,45 +1,84 @@
 # My_first_Repo
 
-book_collection = []
+import json
+import pandas as pd
+import matplotlib.pyplot as plt
 
-def add_book():
-    title = input("Enter book title: ")
-    author = input("Enter book author: ")
-    book = {"title": title, "author": author}
-    book_collection.append(book)
-    print("Book added!")
-add_book()
-def list_books():
-  for book in book_collection:
-    print(f"{book['title']} by {book['author']}")
-list_books()
-def search_books():
-    search_title = input("Enter book title to search: ").lower()
-    search_results = [book for book in book_collection if search_title in book['title'].lower()]
-    if search_results:
-        print("Search Results:")
-        for index, book in enumerate(search_results, start=1):
-            print(f"{index}. Title: {book['title']}, Author: {book['author']}")
-    else:
-        print("No books found.")
-search_books()
-while True:
+class Library:
+    def __init__(self):
+        self.books = []
+
+    def add_book(self):
+        title = input("Enter the book title: ")
+        author = input("Enter the author's name: ")
+        category = input("Enter the book category: ")
+        book = {"title": title, "author": author, "category": category}
+        self.books.append(book)
+        print("Book added successfully!")
+
+    def save_library(self, filename):
+        try:
+            with open(filename, 'w') as file:
+                json.dump(self.books, file, indent=4)
+            print(f"Library saved to {filename} successfully!")
+        except IOError as e:
+            print(f"Error saving library: {e}")
+
+    def load_library(self, filename):
+        try:
+            with open(filename, 'r') as file:
+                self.books = json.load(file)
+            print(f"Library loaded from {filename} successfully!")
+        except FileNotFoundError:
+            print("No library file found. Starting with an empty library.")
+        except json.JSONDecodeError:
+            print("Error parsing the library file. The file may be corrupted.")
+
+    def visualize_library(self):
+        # Convert books list to a pandas DataFrame
+        df = pd.DataFrame(self.books)
+
+        category_count = df['category'].value_counts()
+
+        # Plotting the bar chart
+        category_count.plot(kind='bar', x="Category",y='Number of Books')
+        plt.title('Library Distribution by Category')
+        plt.show()
+
+
+    def display_menu(self):
+        print("\nWelcome to Your Personal Library Manager!")
         print("\nWhat would you like to do?")
-        print("- Add a book (add)")
-        print("- List all books (list)")
-        print("- Search for a book (search)")
-        print("- Quit (quit)")
+        print("1. Add a book")
+        print("2. Save library to file")
+        print("3. Load library from file")
+        print("4. Visualize library by category")
+        print("5. Quit")
 
-        choice = input("Choice: ").lower()
+        choice = input("Enter choice (1-5): ")
+        return choice
 
-        if choice == "add":
-            add_book()
-        elif choice == "list":
-            list_books()
-        elif choice == "search":
-            search_books()
-        elif choice == "quit":
-            print("Goodbye!")
+def main():
+    library = Library()
+    filename = "library.json"
+
+    while True:
+        choice = library.display_menu()
+
+        if choice == "1":
+            library.add_book()
+        elif choice == "2":
+            library.save_library(filename)
+        elif choice == "3":
+            library.load_library(filename)
+        elif choice == "4":
+            library.visualize_library()
+        elif choice == "5":
+            print("Exiting the Library Manager. Goodbye!")
             break
         else:
-            print("Invalid choice, please try again.")
+            print("Invalid choice, please enter a number between 1 and 5.")
+
+if __name__ == "__main__":
+    main()
+
